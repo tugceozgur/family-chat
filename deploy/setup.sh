@@ -21,7 +21,8 @@ sudo systemctl enable --now family-chat
 sed "s/chat.example.com/$DOMAIN/" deploy/nginx.conf | sudo tee /etc/nginx/sites-available/family-chat >/dev/null
 sudo ln -sf /etc/nginx/sites-available/family-chat /etc/nginx/sites-enabled/family-chat
 sudo nginx -t && sudo systemctl reload nginx
-sudo certbot --nginx -d "$DOMAIN" --redirect --non-interactive --agree-tos ${EMAIL:+-m $EMAIL} ${EMAIL:---register-unsafely-without-email}
+if [ -n "$EMAIL" ]; then CERT_MAIL=(-m "$EMAIL"); else CERT_MAIL=(--register-unsafely-without-email); fi
+sudo certbot --nginx -d "$DOMAIN" --redirect --non-interactive --agree-tos "${CERT_MAIL[@]}"
 
 sleep 2
 curl -fsS http://127.0.0.1:8790/healthz && echo " family chat is up at https://$DOMAIN"
