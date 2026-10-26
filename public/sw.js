@@ -1,6 +1,6 @@
 // Service worker: shows push notifications and keeps the app shell available offline.
-const CACHE = 'family-chat-v1';
-const SHELL = ['/', '/index.html', '/style.css', '/app.js', '/manifest.webmanifest', '/icons/icon-192.png'];
+const CACHE = 'family-chat-v2';
+const SHELL = ['/', '/index.html', '/style.css', '/app.js', '/extras.js', '/manifest.webmanifest', '/icons/icon-192.png'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)));

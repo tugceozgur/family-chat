@@ -7,6 +7,10 @@ A private chat for two (or a few) people. It runs in the phone's browser and ins
 - Read receipts: "Delivered" turns into "Seen"
 - Online / offline dot
 - Phone notifications through Web Push, even when the app is closed (Android, and iPhone with iOS 16.4+ once added to the Home Screen)
+- Photos from the camera or gallery, shrunk on the phone before sending, shown in the chat
+- **@claude**: write `@claude` in a message and Claude answers in the chat. Ask it something, or send just `@claude` to have it look at the message or photo right before
+- Shared **Notes** and **To-do** tabs that update live on both phones
+- A **Private** tab that is end-to-end encrypted with a passphrase you both know (see below)
 - One login per person, stored in an environment variable
 - Messages are kept in JSON files in `DATA_DIR`
 
@@ -19,6 +23,12 @@ A private chat for two (or a few) people. It runs in the phone's browser and ins
 
 The server signs pushes with a "VAPID" key pair. Keep the same keys forever (set them as environment variables), otherwise phones have to turn notifications on again.
 
+## The Private tab
+
+Everything in Private is encrypted on the phone (AES-256-GCM, key made from your passphrase with PBKDF2, 600,000 rounds) before it is sent. The server stores only scrambled text, and @claude never receives it. Notifications only say "Added something to Private".
+
+The catch: **if you both forget the passphrase, nobody can get that content back**, not even with access to the server. "Keep unlocked on this device" keeps the key on the phone so you don't type it every time; tap **Lock** to remove it.
+
 ## Settings (environment variables)
 
 | Name | Example | What it is |
@@ -27,7 +37,9 @@ The server signs pushes with a "VAPID" key pair. Keep the same keys forever (set
 | `SESSION_SECRET` | from `npm run keys` | Keeps you logged in across restarts |
 | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` | from `npm run keys` | Signs push notifications |
 | `VAPID_SUBJECT` | `mailto:you@example.com` | Contact address push services can use |
-| `DATA_DIR` | `/data` | Where messages are saved |
+| `DATA_DIR` | `/data` | Where messages, photos, notes and to-dos are saved |
+| `ANTHROPIC_API_KEY` | `sk-ant-...` from console.anthropic.com | Turns on @claude. Without it, Claude replies that it isn't set up |
+| `CLAUDE_MODEL` | `claude-opus-5-5` (default) | Which Claude model answers |
 
 Run `npm install && npm run keys` once on any computer to print fresh values for the three secrets.
 

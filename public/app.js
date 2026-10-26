@@ -28,6 +28,7 @@ async function boot() {
   const data = await res.json();
   state.me = data.me;
   state.users = data.users;
+  state.bot = data.bot;
   state.vapidPublicKey = data.vapidPublicKey;
   showChat();
 }
@@ -66,6 +67,7 @@ async function showChat() {
   connect();
   updateNotifyBanner();
   $('#live-typing').checked = pref('liveTyping') === '1';
+  if (window.onAppReady) window.onAppReady();
 }
 
 // ---------- websocket ----------
@@ -103,7 +105,10 @@ function handle(ev) {
   if (ev.type === 'message') {
     state.outbox = state.outbox.filter((m) => m.clientId !== ev.message.clientId);
     mergeMessages([ev.message]);
-    if (ev.message.from !== state.me.id) clearTyping(ev.message.from);
+    if (ev.message.from !== state.me.id) {
+      clearTyping(ev.message.from);
+      if (window.onNewMessage) window.onNewMessage(ev.message);
+    }
     render();
     markRead();
   } else if (ev.type === 'typing') {
@@ -116,6 +121,8 @@ function handle(ev) {
   } else if (ev.type === 'presence') {
     state.online = ev.online;
     updateStatus();
+  } else if (window.onAppEvent) {
+    window.onAppEvent(ev); // notes, to-dos, private (extras.js)
   }
 }
 
@@ -199,14 +206,14 @@ $('#input').addEventListener('keydown', (e) => {
     send();
   }
 });
-function send() {
+function send(image, preview) {
   const input = $('#input');
   const text = input.value.trim();
-  if (!text) return;
+  if (!text && !image) return;
   const clientId = Math.random().toString(36).slice(2) + Date.now();
-  const out = { type: 'send', text, clientId };
+  const out = { type: 'send', text, image, clientId };
   state.outbox.push(out);
-  state.messages.push({ id: 'p' + clientId, clientId, from: state.me.id, text, ts: Date.now(), pending: true });
+  state.messages.push({ id: 'p' + clientId, clientId, from: state.me.id, text, image: preview || image, ts: Date.now(), pending: true });
   wsSend(out);
   input.value = '';
   input.style.height = 'auto';
@@ -217,9 +224,52 @@ function send() {
   input.focus();
 }
 
+// ---------- photos ----------
+// Shrink photos on the phone before uploading so they send fast on mobile data.
+async function shrinkImage(file, maxSide = 1600) {
+  const bitmap = await createImageBitmap(file).catch(() => null);
+  if (!bitmap) return file;
+  const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(bitmap.width * scale);
+  canvas.height = Math.round(bitmap.height * scale);
+  canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  return new Promise((resolve) => canvas.toBlob((b) => resolve(b || file), 'image/jpeg', 0.85));
+}
+
+$('#photo-btn').addEventListener('click', () => $('#photo-input').click());
+$('#photo-input').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  e.target.value = '';
+  if (!file) return;
+  const btn = $('#photo-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳';
+  try {
+    const blob = await shrinkImage(file);
+    const res = await fetch('/api/upload', { method: 'POST', headers: { 'Content-Type': blob.type || 'image/jpeg' }, body: blob });
+    if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || 'upload failed');
+    const { url } = await res.json();
+    send(url);
+  } catch (err) {
+    alert('Could not send the photo: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '📷';
+  }
+});
+
+$('#messages').addEventListener('click', (e) => {
+  if (e.target.tagName !== 'IMG') return;
+  $('#photo-full').src = e.target.src;
+  $('#photo-viewer').showModal();
+});
+$('#photo-viewer').addEventListener('click', () => $('#photo-viewer').close());
+
 // ---------- read receipts ----------
+const chatOnScreen = () => document.visibilityState === 'visible' && (window.currentView || 'chat') === 'chat';
 function markRead() {
-  if (document.visibilityState !== 'visible') return;
+  if (!chatOnScreen()) return;
   const last = [...state.messages].reverse().find((m) => !m.pending);
   if (last && last.id > (state.reads[state.me.id] || 0)) {
     state.reads[state.me.id] = last.id;
@@ -227,7 +277,7 @@ function markRead() {
   }
 }
 function sendVisibility() {
-  wsSend({ type: 'visibility', visible: document.visibilityState === 'visible' });
+  wsSend({ type: 'visibility', visible: chatOnScreen() });
 }
 document.addEventListener('visibilitychange', () => {
   sendVisibility();
@@ -239,7 +289,7 @@ document.addEventListener('visibilitychange', () => {
 });
 
 // ---------- rendering ----------
-const nameOf = (uid) => (state.users.find((u) => u.id === uid) || {}).name || uid;
+const nameOf = (uid) => (state.bot && uid === state.bot.id ? state.bot.name : (state.users.find((u) => u.id === uid) || {}).name || uid);
 const fmtTime = (ts) => new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 const fmtDay = (ts) => {
   const d = new Date(ts);
@@ -276,9 +326,25 @@ function render(forceScroll) {
       prev = null;
     }
     const el = document.createElement('div');
-    el.className = 'msg ' + (m.from === state.me.id ? 'mine' : 'theirs') + (m.pending ? ' pending' : '');
+    const isBot = state.bot && m.from === state.bot.id;
+    el.className = 'msg ' + (m.from === state.me.id ? 'mine' : 'theirs') + (isBot ? ' bot' : '') + (m.pending ? ' pending' : '');
     if (prev && (prev.from !== m.from || m.ts - prev.ts > 5 * 60e3)) el.classList.add('gap');
-    el.textContent = m.text;
+    if (isBot && (!prev || prev.from !== m.from)) {
+      const who = document.createElement('div');
+      who.className = 'sender';
+      who.textContent = '✨ Claude';
+      el.appendChild(who);
+    }
+    if (m.image) {
+      const img = document.createElement('img');
+      img.src = m.image;
+      img.alt = 'Photo';
+      img.loading = 'lazy';
+      img.addEventListener('load', () => stickToBottom());
+      el.appendChild(img);
+      el.classList.add('has-photo');
+    }
+    if (m.text) el.appendChild(document.createTextNode(m.text));
     const t = document.createElement('span');
     t.className = 'time';
     t.textContent = m.pending ? 'sending…' : fmtTime(m.ts);

@@ -43,17 +43,75 @@
       <button id="notify-btn">Turn on</button>
     </div>
 
-    <main id="messages" aria-live="polite"></main>
-
-    <div id="typing" class="typing" hidden>
-      <span class="typing-dots"><i></i><i></i><i></i></span>
-      <span id="typing-text"></span>
+    <!-- Chat -->
+    <div id="view-chat" class="view">
+      <main id="messages" aria-live="polite"></main>
+      <div id="typing" class="typing" hidden>
+        <span class="typing-dots"><i></i><i></i><i></i></span>
+        <span id="typing-text"></span>
+      </div>
+      <form id="composer" class="composer">
+        <button id="photo-btn" type="button" class="icon-btn round" aria-label="Send a photo">📷</button>
+        <input id="photo-input" type="file" accept="image/*" hidden>
+        <textarea id="input" rows="1" placeholder="Message, or @claude…" enterkeyhint="send" autocomplete="off"></textarea>
+        <button id="send" type="submit" aria-label="Send">➤</button>
+      </form>
     </div>
 
-    <form id="composer" class="composer">
-      <textarea id="input" rows="1" placeholder="Message" enterkeyhint="send" autocomplete="off"></textarea>
-      <button id="send" type="submit" aria-label="Send">➤</button>
-    </form>
+    <!-- Notes -->
+    <div id="view-notes" class="view list-view" hidden>
+      <div class="view-head">
+        <h2>Notes</h2>
+        <button id="new-note">+ New note</button>
+      </div>
+      <div id="notes-list" class="cards"></div>
+    </div>
+
+    <!-- To-do -->
+    <div id="view-todos" class="view list-view" hidden>
+      <div class="view-head"><h2>To-do</h2></div>
+      <form id="todo-form" class="todo-add">
+        <input id="todo-input" placeholder="Add something to do" autocomplete="off" enterkeyhint="done">
+        <button type="submit">Add</button>
+      </form>
+      <ul id="todo-list" class="todos"></ul>
+      <details id="done-wrap" class="done-wrap" hidden>
+        <summary id="done-summary"></summary>
+        <ul id="done-list" class="todos"></ul>
+      </details>
+    </div>
+
+    <!-- Private (end-to-end encrypted) -->
+    <div id="view-private" class="view list-view" hidden>
+      <div class="view-head">
+        <h2>🔒 Private</h2>
+        <button id="vault-lock" class="secondary" hidden>Lock</button>
+      </div>
+      <div id="vault-gate" class="vault-gate">
+        <p id="vault-intro"></p>
+        <form id="vault-form">
+          <input id="vault-pass" type="password" placeholder="Shared passphrase" autocomplete="off" required>
+          <input id="vault-pass2" type="password" placeholder="Type it again" autocomplete="off" hidden>
+          <label class="row"><input type="checkbox" id="vault-remember" checked> Keep unlocked on this device</label>
+          <button type="submit" id="vault-submit">Unlock</button>
+          <p id="vault-error" class="error" role="alert"></p>
+        </form>
+      </div>
+      <div id="vault-open" hidden>
+        <form id="vault-add" class="todo-add">
+          <textarea id="vault-text" rows="2" placeholder="Write something only you two can read"></textarea>
+          <button type="submit">Save</button>
+        </form>
+        <div id="vault-list" class="cards"></div>
+      </div>
+    </div>
+
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-view="chat" role="tab">💬<span>Chat</span><b id="badge-chat" class="badge" hidden></b></button>
+      <button class="tab" data-view="notes" role="tab">📝<span>Notes</span></button>
+      <button class="tab" data-view="todos" role="tab">✅<span>To-do</span><b id="badge-todos" class="badge" hidden></b></button>
+      <button class="tab" data-view="private" role="tab">🔒<span>Private</span></button>
+    </nav>
   </section>
 
   <dialog id="menu">
@@ -67,6 +125,26 @@
     </div>
   </dialog>
 
+  <dialog id="note-dialog" class="note-dialog">
+    <form id="note-form" method="dialog">
+      <input id="note-title" placeholder="Title" autocomplete="off">
+      <textarea id="note-body" rows="12" placeholder="Write your note…"></textarea>
+      <p id="note-meta" class="help"></p>
+      <div class="actions">
+        <button type="button" id="note-delete" class="secondary danger">Delete</button>
+        <span>
+          <button type="button" id="note-cancel" class="secondary">Cancel</button>
+          <button type="submit" id="note-save">Save</button>
+        </span>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="photo-viewer" class="photo-viewer">
+    <img id="photo-full" alt="">
+  </dialog>
+
   <script src="/app.js"></script>
+  <script src="/extras.js"></script>
 </body>
 </html>

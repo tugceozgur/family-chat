@@ -10,7 +10,7 @@ mkdir -p /home/ubuntu/family-chat-data
 
 if [ ! -f .env ]; then
   echo "Creating .env (edit USERS passwords after this)"
-  { echo 'USERS="Serdar:change-me-1,Partner:change-me-2"'; echo "VAPID_SUBJECT=mailto:${EMAIL:-admin@$DOMAIN}"; node scripts/keys.js; } > .env
+  { echo 'USERS="Serdar:change-me-1,Partner:change-me-2"'; echo "VAPID_SUBJECT=mailto:${EMAIL:-admin@$DOMAIN}"; echo "# ANTHROPIC_API_KEY=sk-ant-...   (uncomment to turn on @claude)"; node scripts/keys.js; } > .env
   chmod 600 .env
 fi
 
