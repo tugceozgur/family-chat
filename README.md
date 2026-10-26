@@ -11,6 +11,7 @@ A private chat for two (or a few) people. It runs in the phone's browser and ins
 - **@claude**: write `@claude` in a message and Claude answers in the chat. Ask it something, or send just `@claude` to have it look at the message or photo right before
 - Shared **Notes** and **To-do** tabs that update live on both phones
 - A **Private** tab that is end-to-end encrypted with a passphrase you both know (see below)
+- A **Claude Desktop connector** in [`mcp/`](mcp/README.md): ask Claude Desktop to read or send messages and manage Notes and To-dos
 - One login per person, stored in an environment variable
 - Messages are kept in JSON files in `DATA_DIR`
 

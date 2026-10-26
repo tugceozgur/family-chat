@@ -1,0 +1,19 @@
+{
+  "name": "family-chat-mcp",
+  "version": "1.0.0",
+  "description": "Claude Desktop connector for Family Chat",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "ws": "^8.22.0",
+    "zod": "^4.6.7"
+  },
+  "bin": {
+    "family-chat-mcp": "server.js"
+  },
+  "private": true
+}
