@@ -45,17 +45,17 @@ Push notifications need HTTPS, so test them on the real hosted version.
 
 The server must stay running and keep its files, so pick a host with an always-on machine and a disk.
 
-### Our AWS server (the one Provenorsk runs on)
+### Your own Linux server (Ubuntu + nginx)
 
-It runs next to the other apps as its own systemd service on port 8790, behind nginx with a free Let's Encrypt certificate.
+It runs next to any other apps as its own systemd service on port 8790, behind nginx with a free Let's Encrypt certificate.
 
-1. Point a subdomain (for example `chat.provenorsk.no`) at the server with a DNS **A record** to `44.233.47.251`.
+1. Point a subdomain (for example `chat.tugce.ai`) at the server with a DNS **A record** to the server's public IP.
 2. On the server:
    ```sh
    cd /home/ubuntu
    git clone https://github.com/tugceozgur/family-chat.git
    cd family-chat
-   bash deploy/setup.sh chat.provenorsk.no you@example.com
+   bash deploy/setup.sh chat.tugce.ai you@example.com
    nano .env        # set the real names and passwords in USERS
    sudo systemctl restart family-chat
    ```
@@ -64,7 +64,7 @@ It runs next to the other apps as its own systemd service on port 8790, behind n
 
 Chat history lives in `/home/ubuntu/family-chat-data`, outside the code folder.
 
-### Fly.io (, roughly $2–3 a month)
+### Fly.io (roughly $2–3 a month)
 
 1. Install the `fly` command and sign up: https://fly.io/docs/flyctl/install/
 2. In this folder, change `app = "family-chat-change-me"` in `fly.toml` to a unique name.
