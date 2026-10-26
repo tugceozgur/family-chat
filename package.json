@@ -1,0 +1,21 @@
+{
+  "name": "family-chat",
+  "version": "1.0.0",
+  "description": "A private two-person chat with typing indicators, read receipts and push notifications",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "keys": "node scripts/keys.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "express": "^5.3.0",
+    "web-push": "^3.6.7",
+    "ws": "^8.22.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "private": true
+}

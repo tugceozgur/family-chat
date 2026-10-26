@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: family-chat
+    runtime: node
+    plan: free
+    buildCommand: npm ci
+    startCommand: node server.js
+    healthCheckPath: /healthz
+    envVars:
+      - key: USERS
+        sync: false
+      - key: SESSION_SECRET
+        sync: false
+      - key: VAPID_PUBLIC_KEY
+        sync: false
+      - key: VAPID_PRIVATE_KEY
+        sync: false

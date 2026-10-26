@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+  <title>Family Chat</title>
+  <meta name="theme-color" content="#0f766e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Family">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <section id="login" class="screen" hidden>
+    <form id="login-form" class="card">
+      <div class="logo">💬</div>
+      <h1>Family Chat</h1>
+      <label>Your name <input name="name" autocomplete="username" autocapitalize="words" required></label>
+      <label>Password <input name="password" type="password" autocomplete="current-password" required></label>
+      <button type="submit">Log in</button>
+      <p id="login-error" class="error" role="alert"></p>
+    </form>
+  </section>
+
+  <section id="chat" class="screen" hidden>
+    <header class="bar">
+      <div class="who">
+        <span id="peer-dot" class="dot"></span>
+        <div>
+          <div id="peer-name" class="peer-name"></div>
+          <div id="peer-status" class="peer-status"></div>
+        </div>
+      </div>
+      <button id="menu-btn" class="icon-btn" aria-label="Settings">⋯</button>
+    </header>
+
+    <div id="notify-banner" class="banner" hidden>
+      <span id="notify-text">Turn on notifications to hear about new messages.</span>
+      <button id="notify-btn">Turn on</button>
+    </div>
+
+    <main id="messages" aria-live="polite"></main>
+
+    <div id="typing" class="typing" hidden>
+      <span class="typing-dots"><i></i><i></i><i></i></span>
+      <span id="typing-text"></span>
+    </div>
+
+    <form id="composer" class="composer">
+      <textarea id="input" rows="1" placeholder="Message" enterkeyhint="send" autocomplete="off"></textarea>
+      <button id="send" type="submit" aria-label="Send">➤</button>
+    </form>
+  </section>
+
+  <dialog id="menu">
+    <h2>Settings</h2>
+    <label class="row"><input type="checkbox" id="live-typing"> Let them see what I'm typing, live</label>
+    <label class="row"><input type="checkbox" id="push-toggle"> Notifications on this device</label>
+    <p id="push-help" class="help"></p>
+    <div class="actions">
+      <button id="logout" class="secondary">Log out</button>
+      <button id="close-menu">Done</button>
+    </div>
+  </dialog>
+
+  <script src="/app.js"></script>
+</body>
+</html>
